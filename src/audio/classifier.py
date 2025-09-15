@@ -1,5 +1,6 @@
 from transformers import AutoFeatureExtractor, AutoModelForAudioClassification
 import torch
+import librosa
 
 class AudioClassifier:
     def __init__(self):
@@ -11,7 +12,7 @@ class AudioClassifier:
     def classify_file(self, audio_path):
         print ("Loading: " + audio_path)
 
-        audio_input, sample_rate = librosa.load(audio_path)
+        audio_input, sample_rate = librosa.load(audio_path, sr=16000)
 
         inputs = self.extractor(audio_input, sampling_rate=sample_rate, return_tensors="pt", padding=True)
         print ("Classifying...")
@@ -20,11 +21,19 @@ class AudioClassifier:
             outputs = self.model(**inputs)
             predictions = torch.nn.functional.softmax(outputs.logits, dim=-1)
             
-            # Show top result
             top_prediction = torch.argmax(predictions, dim=-1)
             confidence = torch.max(predictions).item()
             
-            print(f"✅ Model prediction: Class {top_prediction.item()} with {confidence:.3f} confidence")
+            #get label name
+            predicted_label = self.model.config.id2label[top_prediction.item()]
+
+            print(f"✅ Model prediction: Class {predicted_label} with {confidence:.3f} confidence")
             
-            return top_prediction.item(), confidence
+            top_3 = torch.topk(predictions, 3)
+            print("Top 3 predictions:")
+            for i, (conf, class_id) in enumerate(zip(top_3.values[0], top_3.indices[0])):
+                label = self.model.config.id2label[class_id.item()]
+                print(f"  {i+1}. {label}: {conf:.3f}")
+
+            return predicted_label, confidence
 
