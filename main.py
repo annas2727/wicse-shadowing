@@ -9,6 +9,7 @@ def test_model():
            4) Laser pistol
            5) Rifle
            6) Long audio (Apex Legends)
+           7) Long audio (Apex non-stream)
     ''')
 
     audio_path = None
@@ -24,6 +25,8 @@ def test_model():
         audio_path = "src/tests/rifle-gun.mp3"
     elif (file_num == "6"):
         audio_path = "src/tests/apex-long.mp3"
+    elif (file_num == "7"):
+        audio_path = "src/tests/apex-non-stream.mp3"
     
     classifier = AudioClassifier()
     
