@@ -4,9 +4,6 @@ import librosa
 import numpy as np
 import os
 
-# -------------------------
-# Audio Classifier
-# -------------------------
 class AudioClassifier:
     def __init__(self, model_name="MIT/ast-finetuned-audioset-10-10-0.4593", sampling_rate=16000):
         print("Loading model...")
@@ -60,18 +57,13 @@ class AudioClassifier:
                            for conf, class_id in zip(top_3.values[0], top_3.indices[0])]
             return predicted_label, confidence, top3_labels
 
-# -------------------------
-# Local “dataset” (file paths + labels)
-# -------------------------
 dataset = [
     {"path": r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/rifle-gun.mp3", "label": "gunfire"},
     {"path": r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/game-explosion.mp3", "label": "explosion"},
     {"path": r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/apex-long.mp3", "label": "mixed-long-audio"}
 ]
 
-# -------------------------
-# Main
-# -------------------------
+
 if __name__ == "__main__":
     classifier = AudioClassifier()
 
