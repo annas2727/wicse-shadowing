@@ -1,4 +1,7 @@
-librosa
-pyaudio
-numpy
 torch
+torchaudio
+transformers
+librosa
+soundfile
+numpy
+scipy
