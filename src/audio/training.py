@@ -3,7 +3,7 @@ import torch
 import librosa
 import numpy as np
 import pandas as pd
-from datasets import Dataset, Audio, Features, ClassLabel
+from datasets import Dataset
 from transformers import (
     ASTFeatureExtractor,
     ASTConfig,
@@ -13,6 +13,7 @@ from transformers import (
 )
 import evaluate
 
+
 audio_files = [
     r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/rifle-gun.mp3",
     r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/game-explosion.mp3"
@@ -20,42 +21,45 @@ audio_files = [
 labels = [0, 1]
 label_names = ["gunfire", "explosion"]
 
-df = pd.DataFrame({"audio": audio_files, "labels": labels})
-
-features = Features({
-    "audio": Audio(sampling_rate=16000),
-    "labels": ClassLabel(names=label_names)
-})
-dataset = Dataset.from_pandas(df, features=features)
-
-dataset = dataset.train_test_split(test_size=0.5)
+df = pd.DataFrame({"path": audio_files, "label": labels})
+print("Loaded DataFrame:\n", df)
 
 pretrained_model = "MIT/ast-finetuned-audioset-10-10-0.4593"
 feature_extractor = ASTFeatureExtractor.from_pretrained(pretrained_model)
 config = ASTConfig.from_pretrained(pretrained_model)
+
 config.num_labels = len(label_names)
 config.id2label = {i: n for i, n in enumerate(label_names)}
 config.label2id = {n: i for i, n in enumerate(label_names)}
+
 model = ASTForAudioClassification.from_pretrained(
     pretrained_model, config=config, ignore_mismatched_sizes=True
 )
 
-
 SAMPLING_RATE = feature_extractor.sampling_rate
 model_input_name = feature_extractor.model_input_names[0]
 
-def preprocess(batch):
-    audio_arrays = [a["array"] for a in batch["audio"]]
-    inputs = feature_extractor(
-        audio_arrays,
-        sampling_rate=SAMPLING_RATE,
-        return_tensors="pt"
-    )
-    batch[model_input_name] = inputs[model_input_name]
-    return batch
 
-dataset = dataset.cast_column("audio", Audio(sampling_rate=SAMPLING_RATE))
-dataset.set_transform(preprocess, output_all_columns=False)
+def load_audio(path, sr=SAMPLING_RATE):
+    array, _ = librosa.load(path, sr=sr)
+    return array
+
+df["audio"] = df["path"].apply(lambda p: load_audio(p))
+
+dataset = Dataset.from_pandas(df)
+dataset = dataset.train_test_split(test_size=0.5)
+
+def preprocess(example):
+    inputs = feature_extractor(
+        [example["audio"]],
+        sampling_rate=SAMPLING_RATE,
+        return_tensors="pt",
+        padding=True
+    )
+    example[model_input_name] = inputs[model_input_name][0]
+    return example
+
+dataset = dataset.map(preprocess)
 
 
 accuracy = evaluate.load("accuracy")
@@ -83,4 +87,4 @@ trainer = Trainer(
 )
 
 trainer.train()
-print ("Training complete!")
+print("Training complete!")
