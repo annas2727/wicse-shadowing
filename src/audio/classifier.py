@@ -15,7 +15,7 @@ class AudioClassifier:
     def classify_file(self, audio_path):
         audio_input, _ = librosa.load(audio_path, sr=self.sampling_rate)
         predicted_label, confidence, top3 = self.classify_chunk(audio_input)
-        print(f"\n✅ Whole file prediction: {predicted_label} ({confidence:.3f} confidence)")
+        print(f"\nWhole file prediction: {predicted_label} ({confidence:.3f} confidence)")
         print("Top 3 predictions:")
         for i, (lbl, conf) in enumerate(top3, start=1):
             print(f"  {i}. {lbl}: {conf:.3f}")
@@ -58,11 +58,14 @@ class AudioClassifier:
             return predicted_label, confidence, top3_labels
 
 dataset = [
-    {"path": r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/rifle-gun.mp3", "label": "gunfire"},
-    {"path": r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/game-explosion.mp3", "label": "explosion"},
-    {"path": r"C:/Users/annas/OneDrive/Documents/wicseSP/src/tests/apex-long.mp3", "label": "mixed-long-audio"}
+    {"path": r"C:/wicseSP/src/tests/rifle-gun.mp3", "label": "gunfire"},
+    {"path": r"C:/wicseSP/src/tests/game-explosion.mp3", "label": "explosion"},
+    {"path": r"C:/wicseSP/src/tests/footsteps.mp3", "label": "footsteps"},
+    {"path": r"C:/wicseSP/src/tests/laser-pistol.mp3", "label": "laser gun"},
+    {"path": r"C:/wicseSP/src/tests/gunfire.mp3", "label": "gunfire"},
+    {"path": r"C:/wicseSP/src/tests/apex-long.mp3", "label": "mixed-long-audio"},
+    {"path": r"C:/wicseSP/src/tests/apex-non-stream.mp3", "label": "long-audio"}
 ]
-
 
 if __name__ == "__main__":
     classifier = AudioClassifier()
