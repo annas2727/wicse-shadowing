@@ -3,16 +3,21 @@ import os
 import sounddevice as sd
 import numpy as np
 from scipy.io.wavfile import write
-import subprocess
 import time
 import json
 
-from CNNmain.cnnStuff.src.cnnstuff.predict import predict
-from audio.direction import detect_direction
+CNN_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "CNNmain", "cnnStuff", "src")
+)
+print("Adding CNN PATH:", CNN_PATH)
+sys.path.insert(0, CNN_PATH)
+
+from cnnstuff.predict import predict
+from direction import detect_direction
 
 SAMPLE_RATE = 48000
 CHUNK_DURATION = 5 # in seconds
-CHANNELS = 6         # stereo (VB Cable)
+CHANNELS = 6      
 DEVICE_INDEX = 1  # set automatically later
 
 CHUNKS_DIR = "data/audio_chunks"
@@ -35,41 +40,28 @@ def record_chunk(filename):
     )
     sd.wait()
 
-    # Convert float32 → int16 WAV
+    # Convert float32 into int16 WAV
     audio_int16 = (audio * 32767).astype(np.int16)
     write(filename, SAMPLE_RATE, audio_int16)
 
 def run_prediction(filepath):
+
     print(f"Predicting {filepath}...")
-    result = subprocess.run(
-        ["poetry", "run", "python", "-m", "cnnstuff.predict",
-        "--threshold", "0.3",
-        filepath],
-        capture_output=True,
-        text=True
-    )
-    
-    print("MODEL OUTPUT:")
-    output = result.stdout.strip()
-    if not output:
-        print("(no prediction — maybe silence?)")
-    else:
-        print(output)
+
+    predicted, confidence = predict(filepath)
+    direction = detect_direction(filepath)
+
+    # display output
+    print("\n--- MODEL PREDICTION ---")
+    for label, score in sorted(confidence.items(), key=lambda x: x[1], reverse=True):
+        print(f"{label:12} {score:.4f}{'  (PRED)' if label in predicted else ''}")
+
+    print("\nFinal Predicted Labels:", predicted)
+    print(f"Direction: {direction['angle']:.1f}°")
+    print(f"Intensity: {direction['intensity']:.3f}")
     print("-" * 50)
 
-    direction = detect_direction(filepath)
-    print(f"Detected direction: {direction.get('angle', 'N/A'):.1f}° with intensity {direction.get('intensity', 0):.3f}")
-    print(f"Raw energies: {direction.get('raw_energies', {})}")
-
-
-def run_prediction(filepath):
-    # existing classification
-    print(f"Predicting {filepath}...")
-    predicted, confidence = predict(filepath)
-
-    direction = detect_direction(filepath)
-
-    # write direction + prediction to shared JSON
+    # WRITE JSON for overlay
     with open("latest_direction.json", "w") as f:
         json.dump({
             "angle": direction["angle"],
@@ -85,7 +77,7 @@ if __name__ == "__main__":
     os.makedirs(CHUNKS_DIR, exist_ok=True)
 
     chunk_id = 0
-    print("Starting LIVE audio classifier... press CTRL+C to stop.")
+    print("Starting LIVE audio classifier...")
 
     while True:
         filename = os.path.join(CHUNKS_DIR, f"live_chunk_{chunk_id:04}.wav")

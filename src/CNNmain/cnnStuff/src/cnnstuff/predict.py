@@ -31,20 +31,15 @@ def classify(model, audio_file, labels, threshold=0.5):
 
     return predicted, confidence
 
-
-# -------------------------------------------------------------
 # PUBLIC API: simple function capture.py can call
-# -------------------------------------------------------------
 def predict(filepath, threshold=0.5):
 
-    # Determine project paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.abspath(os.path.join(script_dir, ".."))
+    cnnmain_root = os.path.abspath(os.path.join(script_dir, "..", "..", ".."))
 
-    model_path = os.path.join(project_root, "audio_model.pth")
-    labels_path = os.path.join(project_root, "data", "labels.json")
+    model_path  = os.path.join(cnnmain_root, "audio_model.pth")
+    labels_path = os.path.join(cnnmain_root, "data", "labels.json")
 
-    # Load labels
     with open(labels_path, "r") as f:
         labels = json.load(f)
 
@@ -58,9 +53,7 @@ def predict(filepath, threshold=0.5):
     return predicted, confidence
 
 
-# -------------------------------------------------------------
-# OLD CLI INTERFACE (OPTIONAL)
-# -------------------------------------------------------------
+# OLD INTERFACE (OPTIONAL)
 if __name__ == "__main__":
     import argparse
 

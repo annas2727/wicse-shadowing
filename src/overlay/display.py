@@ -4,7 +4,6 @@
 import tkinter as tk
 import math
 import os
-from audio.direction import detect_direction
 
 class Overlay(tk.Tk):
     def __init__(self, *a, **kw):
