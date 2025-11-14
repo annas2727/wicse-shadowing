@@ -1,32 +1,21 @@
-# Python virtual environment
-venv/
+# Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 
-# Logs
-*.log
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Jupyter / IPython
-.ipynb_checkpoints
-
-# PyTorch / Transformers outputs
-src/audio/runs/
-src/audio/checkpoint-*
-
-# Audio files
-src/tests/*.mp3
-src/tests/*.wav
-
-# VS Code settings
-.vscode/
-
-# Misc
-*.safetensors
-*.pt
+# Audio datasets
+*.wav
+*.mp3
+*.mp4
+data/
+audio_chunks/
+Fine_Tuning/
 *.pth
+*.pt
+*.npy
+
+# Virtual env
+venv/
+.env/
+
+# IDE
+.vscode/
