@@ -1,3 +1,24 @@
 data/cs2_gameplay.wav
 data/counter_strike_audio.wav
 data/gameplay_720p.mp4
+# Python
+__pycache__/
+*.pyc
+
+# Audio datasets
+*.wav
+*.mp3
+*.mp4
+data/
+audio_chunks/
+Fine_Tuning/
+*.pth
+*.pt
+*.npy
+
+# Virtual env
+venv/
+.env/
+
+# IDE
+.vscode/
