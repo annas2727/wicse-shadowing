@@ -4,13 +4,36 @@
 import tkinter as tk
 import math
 import os
+import json
 
+JSON_PATH = "latest_direction.json"  # same location capture.py writes to
+
+def read_json(path):
+    try:
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            raw = f.read()
+
+        if not raw or raw.strip() == "":
+            return None
+
+        raw = raw.strip()
+        if not raw.startswith("{") or not raw.endswith("}"):
+            return None
+
+        return json.loads(raw)
+
+    except:
+        return None
+    
 class Overlay(tk.Tk):
     def __init__(self, *a, **kw):
         tk.Tk.__init__(self, *a, **kw)
+        super().__init__(*a, **kw)
         self._set_window_attributes()
         self.set_window_transparency()
         self._create_ui_elements()
+
+        self.update_overlay()
 
     def _set_window_attributes(self):
         self.title("Overlay")
@@ -54,50 +77,33 @@ class Overlay(tk.Tk):
         self.y_offset = None
         
     def draw_dot(self, angle_deg, intensity):
-        """
-        angle_deg: 0-360 degrees
-        intensity: 0-1 (distance from center)
-        """
+        #angle_deg: 0-360 degrees
+        #intensity: 0-1 (distance from center)
+
         radius = 200  # circle radius
         inner_radius = radius * intensity
-
-        # Convert angle to radians
         angle_rad = math.radians(angle_deg)
 
-        # Circle center
+        # Circle center and dot position
         cx, cy = 200, 200
-
-        # Compute dot position
         x = cx + inner_radius * math.cos(angle_rad)
-        y = cy + inner_radius * math.sin(angle_rad)
+        y = cy - inner_radius * math.sin(angle_rad)
 
         # Update dot on canvas
         self.canvas.coords(self.dot, x - 5, y - 5, x + 5, y + 5)
 
-    def read_direction_json(self):
-            if not os.path.exists("direction_data.json"):
-                return None
+    def update_overlay(self):
+        data = read_json(JSON_PATH)
 
-            try:
-                with open(JSON_PATH, "r") as f:
-                    return json.load(f)
-            except:
-                return None
-
-    def animate(self):
-        data = self.read_direction_json()
-
-        if data:
+        if data is not None: 
             angle = data.get("angle", 0)
             intensity = data.get("intensity", 0)
             self.draw_dot(angle, intensity)
-
-        self.after(50, self.animate)  # 20 FPS
+            
+        self.after(50, self.update_overlay)
 
 
     def run(self):
-        self.test_angle = 0
-        self.animate()
         self.mainloop()
 
 #driver code

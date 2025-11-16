@@ -5,6 +5,7 @@ import numpy as np
 from scipy.io.wavfile import write
 import time
 import json
+import time
 
 CNN_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "CNNmain", "cnnStuff", "src")
@@ -16,11 +17,28 @@ from cnnstuff.predict import predict
 from direction import detect_direction
 
 SAMPLE_RATE = 48000
-CHUNK_DURATION = 5 # in seconds
-CHANNELS = 6      
+CHUNK_DURATION = 1 # in seconds
+CHANNELS = 8      
 DEVICE_INDEX = 1  # set automatically later
 
 CHUNKS_DIR = "data/audio_chunks"
+
+def write_json(json_obj, path="latest_direction.json"):
+        tmp = path + ".tmp"
+        
+        # write temporary
+        with open(tmp, "w") as f:
+            json.dump(json_obj, f)
+
+        # retry replace 10 times if overlay temporarily locks file
+        for _ in range(10):
+            try:
+                os.replace(tmp, path)
+                return
+            except PermissionError:
+                time.sleep(0.01)  # wait 10ms
+
+        print("WARNING: Could not replace JSON file due to file lock.")
 
 def find_vbcable():
     devices = sd.query_devices()
@@ -61,15 +79,15 @@ def run_prediction(filepath):
     print(f"Intensity: {direction['intensity']:.3f}")
     print("-" * 50)
 
-    # WRITE JSON for overlay
-    with open("latest_direction.json", "w") as f:
-        json.dump({
-            "angle": direction["angle"],
-            "intensity": direction["intensity"],
-            "label": predicted,
-            "confidence": confidence
-        }, f)
+    # WRITE JSON for overlay and use tmp so it never reads a half written file
+    write_json({
+        "angle": direction["angle"],
+        "intensity": direction["intensity"],
+        "label": predicted,
+        "confidence": confidence
+    })
 
+    
 if __name__ == "__main__":
     DEVICE_INDEX = find_vbcable()
     print(f"Using VB-Cable device index: {DEVICE_INDEX}")
