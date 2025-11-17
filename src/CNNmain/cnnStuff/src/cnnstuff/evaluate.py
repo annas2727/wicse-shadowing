@@ -6,6 +6,8 @@ import subprocess
 import platform
 from .audio_model import AudioCNN
 from .predict import predict
+from .predict import classify 
+
 
 def play_audio(file_path):
     """Plays the audio file using a system-specific command."""
@@ -82,7 +84,8 @@ def interactive_evaluate(model, all_labels, manual_labels_path, audio_dir, thres
             continue
 
         # Get model's prediction
-        predicted_labels, _ = predict(model, audio_file_path, all_labels, threshold)
+
+        predicted_labels, _ = classify(model, audio_file_path, all_labels, threshold)        
         correct_labels = manual_labels.get(filename, [])
 
         print(f"\n({i+1}/{len(files_to_check)}) Evaluating: {filename}")

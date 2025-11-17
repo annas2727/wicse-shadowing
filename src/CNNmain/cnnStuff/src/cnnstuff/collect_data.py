@@ -7,7 +7,7 @@ import torch
 import platform
 import subprocess
 from .audio_model import AudioCNN
-from .predict import predict
+from .predict import classify
 
 def play_audio(file_path):
     """Plays the audio file using a system-specific command."""
@@ -21,6 +21,8 @@ def play_audio(file_path):
             subprocess.run(["afplay", file_path], check=True, capture_output=True)
         elif system == "Linux":
             subprocess.run(["aplay", file_path], check=True, capture_output=True)
+        elif system == "Windows":
+            os.startfile(file_path)
         else:
             print(f"Warning: Unsupported OS '{system}'. Please play the file manually.")
     except (FileNotFoundError, subprocess.CalledProcessError, Exception) as e:
@@ -71,7 +73,7 @@ def model_assisted_labeling(chunk_files, model, all_labels, threshold):
         audio_file_path = os.path.join(audio_dir, chunk_file)
         
         # Get both the final prediction and the detailed confidence scores
-        predicted_labels, confidence = predict(model, audio_file_path, all_labels, threshold)
+        predicted_labels, confidence = classify(model, audio_file_path, all_labels, threshold)
 
         print(f"\n({i+1}/{len(unlabeled_chunks)}) Labeling: {chunk_file}")
         play_audio(audio_file_path)
@@ -172,9 +174,17 @@ if __name__ == "__main__":
         exit()
 
     # --- Run Process ---
-    if os.path.exists(args.audio_file):
+    audio_chunks_dir = os.path.join(project_root, 'data', 'audio_chunks')
+
+    if args.audio_file.lower() == "existing":
+        # Label already-split files
+        chunk_filenames = sorted([f for f in os.listdir(audio_chunks_dir) if f.endswith(".wav")])
+        model_assisted_labeling(chunk_filenames, model, all_labels, args.threshold)
+
+    elif os.path.exists(args.audio_file):
+        # Split the provided file, then label
         chunk_filenames = split_audio_to_chunks(args.audio_file)
         model_assisted_labeling(chunk_filenames, model, all_labels, args.threshold)
-        print("\nLabeling complete! You can now retrain your model with the new data.")
+
     else:
-        print(f"Error: Audio file not found at '{args.audio_file}'")
+        print(f"Error: '{args.audio_file}' not found or invalid. Provide a file or use 'existing'.")
