@@ -5,7 +5,6 @@ import argparse
 import subprocess
 import platform
 from .audio_model import AudioCNN
-from .predict import predict
 from .predict import classify 
 
 

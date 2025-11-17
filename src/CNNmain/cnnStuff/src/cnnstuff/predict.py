@@ -49,17 +49,6 @@ def predict(filepath, threshold=0.5):
 
     # Classify
     predicted, confidence = classify(model, filepath, labels, threshold)
-    import json
-
-    with open("data/manual_labels.json", "r") as f:
-        labels = json.load(f)
-
-    counts = {}
-    for file, labs in labels.items():
-        for l in labs:
-            counts[l] = counts.get(l, 0) + 1
-
-    print(counts)
 
     return predicted, confidence
 

@@ -149,7 +149,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Split an audio file and label new chunks with model assistance.")
     parser.add_argument("audio_file", type=str, help="Path to the new audio or video file to process.")
     parser.add_argument("--model_path", type=str, default="audio_model.pth", help="Path to the trained model file.")
-    parser.add_argument("--threshold", type=float, default=0.5, help="Prediction threshold for the model.")
+    parser.add_argument("--threshold", type=float, default=0.35, help="Prediction threshold for the model.")
     args = parser.parse_args()
 
     # --- Path Setup ---

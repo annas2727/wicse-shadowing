@@ -66,7 +66,7 @@ def run_prediction(filepath):
 
     print(f"Predicting {filepath}...")
 
-    predicted, confidence = predict(filepath)
+    predicted, confidence = predict(filepath, threshold=0.3)
     direction = detect_direction(filepath)
 
     # display output

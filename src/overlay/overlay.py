@@ -11,13 +11,13 @@ import time
 JSON_PATH = "latest_direction.json"  # same location capture.py writes to
 
 ICON_MAP = {
-    "footsteps": "👣",
+    "footsteps": "",
     "gunshot": "💥",
-    "gun_handling": "🔧",
+    "gun_handling": "🔫",
     "explosion": "💣",
     "knife": "🔪",
-    "interface": "🎯",
-    "background": "🌫️"
+    "interface": "",
+    "background": ""
 }
 
 def read_json(path):
@@ -153,21 +153,27 @@ class Overlay(tk.Tk):
 
             self.active_particles.append(p)
 
-    def emit_icon(self, angle_deg, label):
-        if isinstance(label, list):
-            label = label[0] if label else "background"
-
-        emoji = ICON_MAP.get(label, "❓")
+    def emit_icon(self, angle_deg, labels):
+        if not isinstance(labels, list):
+            labels = [labels]
 
         angle_rad = math.radians(angle_deg)
-        x = self.CENTER[0] + (self.CIRCLE_RADIUS + 18) * math.cos(angle_rad)
-        y = self.CENTER[1] - (self.CIRCLE_RADIUS + 18) * math.sin(angle_rad)
 
-        self.active_icons.append({
-            "x": x, "y": y,
-            "emoji": emoji,
-            "alpha": 1.0
-        })
+        for i, label in enumerate(labels):
+            emoji = ICON_MAP.get(label, "❓")
+
+            # offset labels slightly so they don’t overlap
+            offset_angle = angle_rad + (i * 0.15) - (0.15 * (len(labels)-1)/2)
+
+            x = self.CENTER[0] + (self.CIRCLE_RADIUS + 18) * math.cos(offset_angle)
+            y = self.CENTER[1] - (self.CIRCLE_RADIUS + 18) * math.sin(offset_angle)
+
+            self.active_icons.append({
+                "x": x, "y": y,
+                "emoji": emoji,
+                "alpha": 1.0
+            })
+
 
     @staticmethod
     def fade_color(alpha):
