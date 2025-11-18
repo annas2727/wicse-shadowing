@@ -63,6 +63,7 @@ def model_assisted_labeling(chunk_files, model, all_labels, threshold):
     unlabeled_chunks = [chunk for chunk in chunk_files if chunk not in existing_labels]
     if not unlabeled_chunks:
         print("All generated audio chunks are already labeled. Nothing to do.")
+
         return
 
     print(f"--- Model-Assisted Labeling ---")
